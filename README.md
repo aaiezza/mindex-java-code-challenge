@@ -64,13 +64,15 @@ Create a new type, ReportingStructure, that has two properties: employee and num
 For the field "numberOfReports", this should equal the total number of reports under a given employee. The number of 
 reports is determined to be the number of directReports for an employee and all of their distinct reports. For example, 
 given the following employee structure:
+
+```mermaid
+graph TD;
+  JL(John Lennon) --> PM(Paul McCartney);
+  JL --> RS(Ringo Star)
+  RS --> PB(Pete Best)
+  RS --> GH(George Harrison)
 ```
-                    John Lennon
-                /               \
-         Paul McCartney         Ringo Starr
-                               /        \
-                          Pete Best     George Harrison
-```
+
 The numberOfReports for employee John Lennon (employeeId: 16a596ae-edd3-4847-99fe-c4518e82c86f) would be equal to 4. 
 
 This new type should have a new REST endpoint created for it. This new endpoint should accept an employeeId and return 
