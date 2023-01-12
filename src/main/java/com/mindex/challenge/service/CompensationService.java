@@ -1,5 +1,10 @@
 package com.mindex.challenge.service;
 
+import static java.util.stream.Collectors.toUnmodifiableList;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import com.mindex.challenge.dao.CompensationRepository;
 import com.mindex.challenge.data.Compensation;
+import com.mindex.challenge.data.Employee;
+import com.mindex.challenge.data.EmployeeCompensationHistory;
+import com.mindex.challenge.data.EmployeeCompensationHistory.CompensationData;
 
 @Service
 public class CompensationService {
@@ -23,15 +31,20 @@ public class CompensationService {
         return compensation;
     }
 
-    public Compensation read(final String employeeId) {
+    public EmployeeCompensationHistory read(final String employeeId) {
         LOG.debug("Fetching compensation for employee with id [{}]", employeeId);
 
-        Compensation compensation = compensationRepository.findByEmployeeEmployeeId(employeeId);
+        final List<Compensation> employeeCompensations = compensationRepository.findByEmployeeEmployeeId(employeeId);
 
-        if (compensation == null) {
-            throw new RuntimeException("Invalid employeeId: " + employeeId);
+        if (employeeCompensations == null || employeeCompensations.isEmpty()) {
+            throw new RuntimeException("Unknown employeeId: " + employeeId);
         }
 
-        return compensation;
+        final Employee employee = employeeCompensations.get(0).getEmployee();
+
+        return employeeCompensations.stream()
+                .map(comp -> new CompensationData(comp.getSalary(), comp.getEffectiveDate()))
+                .collect(Collectors.collectingAndThen(toUnmodifiableList(),
+                        compHistory -> new EmployeeCompensationHistory(employee, compHistory)));
     }
 }

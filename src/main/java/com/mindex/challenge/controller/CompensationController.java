@@ -10,14 +10,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mindex.challenge.data.Compensation;
+import com.mindex.challenge.data.EmployeeCompensationHistory;
 import com.mindex.challenge.service.CompensationService;
 
 @RestController
+@lombok.RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class CompensationController {
     private static final Logger LOG = LoggerFactory.getLogger(CompensationController.class);
 
-    @Autowired
-    private CompensationService compensationService;
+    private final CompensationService compensationService;
 
     @PostMapping("/employee/{id}/compensation")
     public Compensation create(@RequestBody Compensation compensation) {
@@ -27,7 +28,7 @@ public class CompensationController {
     }
 
     @GetMapping("/employee/{id}/compensation")
-    public Compensation read(@PathVariable String id) {
+    public EmployeeCompensationHistory read(@PathVariable String id) {
         LOG.debug("Received employee get request for id [{}]", id);
 
         return compensationService.read(id);
