@@ -22,29 +22,32 @@ public class GetReportingStructureService {
     private EmployeeRepository employeeRepository;
 
     public ReportingStructure execute(final String employeeId) {
-        Employee rootEmployee = employeeRepository.findByEmployeeId(employeeId);
+        final Employee employee = employeeRepository.findEmployeeWithHydratedDirectReports(employeeId);
 
-        if (rootEmployee == null) {
-            throw new RuntimeException("Invalid employeeId: " + employeeId);
-        }
+        final ReportingStructure reportingStructure = new ReportingStructure(employee,
+                getNumberOfDirectReports(employee));
 
+        LOG.debug("Found that employee id [{}] has {} direct reports", employeeId,
+                reportingStructure.getNumberOfReports());
+
+        return reportingStructure;
+    }
+
+    private static int getNumberOfDirectReports(final Employee rootEmployee) {
         final AtomicInteger numberOfReports = new AtomicInteger();
-        final Deque<String> employeeIdsToTraverse = new ArrayDeque<>();
+        final Deque<Employee> employeesToTraverse = new ArrayDeque<>();
 
-        rootEmployee.getDirectReports().stream().map(Employee::getEmployeeId).forEach(employeeIdsToTraverse::add);
+        rootEmployee.getDirectReports().stream().forEach(employeesToTraverse::add);
 
-        while (!employeeIdsToTraverse.isEmpty()) {
-            final String childEmployeeId = employeeIdsToTraverse.pop();
+        while (!employeesToTraverse.isEmpty()) {
+            final Employee subordinate = employeesToTraverse.pop();
             numberOfReports.incrementAndGet();
 
-            final Employee employee = employeeRepository.findByEmployeeId(childEmployeeId);
-            if (employee.getDirectReports() != null) {
-                employee.getDirectReports().stream().map(Employee::getEmployeeId).forEach(employeeIdsToTraverse::add);
+            if (subordinate.getDirectReports() != null) {
+                subordinate.getDirectReports().stream().forEach(employeesToTraverse::add);
             }
         }
-
-        LOG.debug("Found that employee id [{}] has {} direct reports", employeeId, numberOfReports.get());
-
-        return new ReportingStructure(rootEmployee, numberOfReports.get());
+        
+        return numberOfReports.get();
     }
 }
