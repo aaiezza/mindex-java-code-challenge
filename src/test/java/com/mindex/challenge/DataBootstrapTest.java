@@ -1,17 +1,17 @@
 package com.mindex.challenge;
 
-import com.mindex.challenge.dao.EmployeeRepository;
-import com.mindex.challenge.data.Employee;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import static org.junit.Assert.assertEquals;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.Assert.assertNotNull;
+import com.mindex.challenge.dao.EmployeeRepository;
+import com.mindex.challenge.data.Employee;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class DataBootstrapTest {
 
@@ -21,10 +21,10 @@ public class DataBootstrapTest {
     @Test
     public void test() {
         Employee employee = employeeRepository.findByEmployeeId("16a596ae-edd3-4847-99fe-c4518e82c86f");
-        assertNotNull(employee);
-        assertEquals("John", employee.getFirstName());
-        assertEquals("Lennon", employee.getLastName());
-        assertEquals("Development Manager", employee.getPosition());
-        assertEquals("Engineering", employee.getDepartment());
+        assertThat(employee).isNotNull();
+        assertThat(employee.getFirstName()).isEqualTo("John");
+        assertThat(employee.getLastName()).isEqualTo("Lennon");
+        assertThat(employee.getPosition()).isEqualTo("Development Manager");
+        assertThat(employee.getDepartment()).isEqualTo("Engineering");
     }
 }

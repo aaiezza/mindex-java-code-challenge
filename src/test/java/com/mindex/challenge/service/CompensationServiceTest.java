@@ -1,35 +1,35 @@
 package com.mindex.challenge.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static com.mindex.challenge.utils.TestUtils.assertCompensationEquivalence;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.mindex.challenge.data.Compensation;
 import com.mindex.challenge.data.Employee;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CompensationServiceTest {
 
     private String employeeCompensationUrl;
 
-    @LocalServerPort
+    @Value("${local.server.port}")
     private int port;
 
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @Before
+    @BeforeEach
     public void setup() {
         employeeCompensationUrl = "http://localhost:" + port + "/employee/{id}/compensation";
     }
@@ -49,28 +49,17 @@ public class CompensationServiceTest {
         testCompensation.setEffectiveDate(LocalDateTime.parse("2023-02-01T00:00:00"));
 
         // Create checks
-        final Compensation createdCompensation = restTemplate.postForEntity(employeeCompensationUrl, testCompensation, Compensation.class, testCompensation.getEmployee().getEmployeeId()).getBody();
+        final Compensation createdCompensation = restTemplate.postForEntity(employeeCompensationUrl, testCompensation,
+                Compensation.class, testCompensation.getEmployee().getEmployeeId()).getBody();
 
-        assertNotNull(createdCompensation.getEmployee().getEmployeeId());
+        assertThat(createdCompensation.getEmployee().getEmployeeId()).isNotNull();
         assertCompensationEquivalence(testCompensation, createdCompensation);
 
-
         // Read checks
-        final Compensation readCompensation = restTemplate.getForEntity(employeeCompensationUrl, Compensation.class, createdCompensation.getEmployee().getEmployeeId()).getBody();
-        assertEquals(createdCompensation.getEmployee().getEmployeeId(), readCompensation.getEmployee().getEmployeeId());
+        final Compensation readCompensation = restTemplate.getForEntity(employeeCompensationUrl, Compensation.class,
+                createdCompensation.getEmployee().getEmployeeId()).getBody();
+        assertThat(readCompensation.getEmployee().getEmployeeId())
+                .isEqualTo(createdCompensation.getEmployee().getEmployeeId());
         assertCompensationEquivalence(createdCompensation, readCompensation);
-    }
-
-    private static void assertEmployeeEquivalence(Employee expected, Employee actual) {
-        assertEquals(expected.getFirstName(), actual.getFirstName());
-        assertEquals(expected.getLastName(), actual.getLastName());
-        assertEquals(expected.getDepartment(), actual.getDepartment());
-        assertEquals(expected.getPosition(), actual.getPosition());
-    }
-
-    private static void assertCompensationEquivalence(Compensation expected, Compensation actual) {
-        assertEmployeeEquivalence(expected.getEmployee(), actual.getEmployee());
-        assertEquals(expected.getSalary(), actual.getSalary());
-        assertEquals(expected.getEffectiveDate(), actual.getEffectiveDate());
     }
 }

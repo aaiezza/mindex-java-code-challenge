@@ -1,40 +1,37 @@
 package com.mindex.challenge.service.impl;
 
-import com.mindex.challenge.data.Employee;
-import com.mindex.challenge.service.EmployeeService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static com.mindex.challenge.utils.TestUtils.assertEmployeeEquivalence;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import com.mindex.challenge.data.Employee;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class EmployeeServiceImplTest {
 
     private String employeeUrl;
     private String employeeIdUrl;
 
-    @Autowired
-    private EmployeeService employeeService;
-
-    @LocalServerPort
+    @Value("${local.server.port}")
     private int port;
 
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @Before
+    @BeforeEach
     public void setup() {
         employeeUrl = "http://localhost:" + port + "/employee";
         employeeIdUrl = "http://localhost:" + port + "/employee/{id}";
@@ -51,13 +48,13 @@ public class EmployeeServiceImplTest {
         // Create checks
         Employee createdEmployee = restTemplate.postForEntity(employeeUrl, testEmployee, Employee.class).getBody();
 
-        assertNotNull(createdEmployee.getEmployeeId());
+        assertThat(createdEmployee.getEmployeeId()).isNotNull();
         assertEmployeeEquivalence(testEmployee, createdEmployee);
 
 
         // Read checks
         Employee readEmployee = restTemplate.getForEntity(employeeIdUrl, Employee.class, createdEmployee.getEmployeeId()).getBody();
-        assertEquals(createdEmployee.getEmployeeId(), readEmployee.getEmployeeId());
+        assertThat(readEmployee.getEmployeeId()).isEqualTo(createdEmployee.getEmployeeId());
         assertEmployeeEquivalence(createdEmployee, readEmployee);
 
 
@@ -75,12 +72,5 @@ public class EmployeeServiceImplTest {
                         readEmployee.getEmployeeId()).getBody();
 
         assertEmployeeEquivalence(readEmployee, updatedEmployee);
-    }
-
-    private static void assertEmployeeEquivalence(Employee expected, Employee actual) {
-        assertEquals(expected.getFirstName(), actual.getFirstName());
-        assertEquals(expected.getLastName(), actual.getLastName());
-        assertEquals(expected.getDepartment(), actual.getDepartment());
-        assertEquals(expected.getPosition(), actual.getPosition());
     }
 }
