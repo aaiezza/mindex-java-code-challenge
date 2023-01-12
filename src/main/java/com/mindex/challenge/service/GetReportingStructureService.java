@@ -1,8 +1,6 @@
 package com.mindex.challenge.service;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,29 +20,15 @@ public class GetReportingStructureService {
     private EmployeeRepository employeeRepository;
 
     public ReportingStructure execute(final String employeeId) {
-        Employee rootEmployee = employeeRepository.findByEmployeeId(employeeId);
+        final List<Employee> directReports = employeeRepository.findEmployeeAndDirectReports(employeeId);
 
-        if (rootEmployee == null) {
-            throw new RuntimeException("Invalid employeeId: " + employeeId);
-        }
+        final ReportingStructure reportingStructure = new ReportingStructure(
+                directReports.stream().filter(e -> e.getEmployeeId().equals(employeeId)).findFirst().get(),
+                directReports.size() - 1);
 
-        final AtomicInteger numberOfReports = new AtomicInteger();
-        final Deque<String> employeeIdsToTraverse = new ArrayDeque<>();
+        LOG.debug("Found that employee id [{}] has {} direct reports", employeeId,
+                reportingStructure.getNumberOfReports());
 
-        rootEmployee.getDirectReports().stream().map(Employee::getEmployeeId).forEach(employeeIdsToTraverse::add);
-
-        while (!employeeIdsToTraverse.isEmpty()) {
-            final String childEmployeeId = employeeIdsToTraverse.pop();
-            numberOfReports.incrementAndGet();
-
-            final Employee employee = employeeRepository.findByEmployeeId(childEmployeeId);
-            if (employee.getDirectReports() != null) {
-                employee.getDirectReports().stream().map(Employee::getEmployeeId).forEach(employeeIdsToTraverse::add);
-            }
-        }
-
-        LOG.debug("Found that employee id [{}] has {} direct reports", employeeId, numberOfReports.get());
-
-        return new ReportingStructure(rootEmployee, numberOfReports.get());
+        return reportingStructure;
     }
 }
