@@ -21,7 +21,7 @@ public class GetReportingStructureService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    public ReportingStructure execute(final String employeeId) {
+    public ReportingStructure execute(final Employee.Id employeeId) {
         Employee rootEmployee = employeeRepository.findByEmployeeId(employeeId);
 
         if (rootEmployee == null) {
@@ -29,12 +29,12 @@ public class GetReportingStructureService {
         }
 
         final AtomicInteger numberOfReports = new AtomicInteger();
-        final Deque<String> employeeIdsToTraverse = new ArrayDeque<>();
+        final Deque<Employee.Id> employeeIdsToTraverse = new ArrayDeque<>();
 
         rootEmployee.getDirectReports().stream().map(Employee::getEmployeeId).forEach(employeeIdsToTraverse::add);
 
         while (!employeeIdsToTraverse.isEmpty()) {
-            final String childEmployeeId = employeeIdsToTraverse.pop();
+            final Employee.Id childEmployeeId = employeeIdsToTraverse.pop();
             numberOfReports.incrementAndGet();
 
             final Employee employee = employeeRepository.findByEmployeeId(childEmployeeId);

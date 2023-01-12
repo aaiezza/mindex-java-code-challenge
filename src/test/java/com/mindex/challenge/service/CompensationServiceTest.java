@@ -37,7 +37,7 @@ public class CompensationServiceTest {
     @Test
     public void testCreateReadUpdate() {
         final Employee testEmployee = new Employee();
-        testEmployee.setEmployeeId("ad55e276-f148-4d37-afa2-6747295c91a4");
+        testEmployee.setEmployeeId(new Employee.Id("ad55e276-f148-4d37-afa2-6747295c91a4"));
         testEmployee.setFirstName("John");
         testEmployee.setLastName("Doe");
         testEmployee.setDepartment("Engineering");

@@ -22,14 +22,14 @@ public class EmployeeController {
     }
 
     @GetMapping("/employee/{id}")
-    public Employee read(@PathVariable String id) {
+    public Employee read(@PathVariable Employee.Id id) {
         LOG.debug("Received employee get request for id [{}]", id);
 
         return employeeService.read(id);
     }
 
     @PutMapping("/employee/{id}")
-    public Employee update(@PathVariable String id, @RequestBody Employee employee) {
+    public Employee update(@PathVariable Employee.Id id, @RequestBody Employee employee) {
         LOG.debug("Received employee update request for id [{}] and employee [{}]", id, employee);
 
         employee.setEmployeeId(id);
