@@ -3,14 +3,18 @@ package com.mindex.challenge.data;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@lombok.Value
+@lombok.Data
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
 public class EmployeeCompensationHistory {
-    private final Employee employee;
-    private final List<CompensationData> compensationHistory;
+    private Employee employee;
+    private List<CompensationData> compensationHistory;
 
-    @lombok.Value
+    @lombok.Data
+    @lombok.NoArgsConstructor
+    @lombok.AllArgsConstructor
     public static class CompensationData {
-        private final int salary;
-        private final LocalDateTime effectiveDate;
+        private int salary;
+        private LocalDateTime effectiveDate;
     }
 }

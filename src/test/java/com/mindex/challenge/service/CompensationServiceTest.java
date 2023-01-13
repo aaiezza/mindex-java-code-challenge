@@ -7,17 +7,16 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.mindex.challenge.data.Compensation;
 import com.mindex.challenge.data.Employee;
+import com.mindex.challenge.data.EmployeeCompensationHistory;
+import com.mindex.challenge.data.EmployeeCompensationHistory.CompensationData;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CompensationServiceTest {
 
@@ -56,10 +55,15 @@ public class CompensationServiceTest {
         assertCompensationEquivalence(testCompensation, createdCompensation);
 
         // Read checks
-        final Compensation readCompensation = restTemplate.getForEntity(employeeCompensationUrl, Compensation.class,
+        final EmployeeCompensationHistory readCompensationHistory = restTemplate.getForEntity(employeeCompensationUrl, EmployeeCompensationHistory.class,
                 createdCompensation.getEmployee().getEmployeeId()).getBody();
-        assertThat(readCompensation.getEmployee().getEmployeeId())
+        assertThat(readCompensationHistory.getEmployee().getEmployeeId())
                 .isEqualTo(createdCompensation.getEmployee().getEmployeeId());
+        final CompensationData readCompensationData = readCompensationHistory.getCompensationHistory().get(0);
+        final Compensation readCompensation = new Compensation(
+                readCompensationHistory.getEmployee(),
+                readCompensationData.getSalary(),
+                readCompensationData.getEffectiveDate());
         assertCompensationEquivalence(createdCompensation, readCompensation);
     }
 }
